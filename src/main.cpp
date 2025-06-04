@@ -3,6 +3,8 @@
 #include <PubSubClient.h>
 #include "Oximeter.h"
 #include "time.h"
+#include <SD.h>
+#define SD_CS 5  // SD kart CS pini
 
 /// --- MQTT Callback ---------------------------------------------------------
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
@@ -102,6 +104,13 @@ void setup() {
     while (1);
   }
   ox.startTasks();
+
+    // --- SD Kart Başlat
+  if (!SD.begin(SD_CS)) {
+    Serial.println(" SD kart başlatılamadı!");
+  } else {
+    Serial.println(" SD kart takıldı.");
+  }
 }
 
 void loop() {
@@ -145,5 +154,15 @@ void loop() {
 
     Serial.println(msg);
     client.publish(topic, msg);
+
+File dosya = SD.open("/spo2_data.json", FILE_APPEND);
+if (dosya) {
+  dosya.println(msg);  
+  dosya.close();
+  Serial.println("✅ JSON dosyasına yazıldı.");
+} else {
+  Serial.println("❌ JSON dosyası açılamadı.");
+}
+
   }
 }
